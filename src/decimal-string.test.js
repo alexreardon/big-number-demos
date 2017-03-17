@@ -88,6 +88,12 @@ describe('decimal string', () => {
   });
 
   describe('subtraction', () => {
+    it('should return 0 if the digits are the same', () => {
+      expect(subtract('1', '1')).to.equal('0');
+      expect(subtract('22', '22')).to.equal('0');
+      expect(subtract('333', '333')).to.equal('0');
+    });
+
     describe('single digits', () => {
       it('should subtract with no overflow', () => {
         expect(subtract('2', '1')).to.equal('1');
@@ -137,12 +143,49 @@ describe('decimal string', () => {
         expect(subtract('111', '11')).to.equal('100');
       });
 
-      it.only('should subtract two digit numbers with overflow in the first digit', () => {
+      it('should subtract two digit numbers with overflow in the first digit', () => {
         expect(subtract('121', '12')).to.equal('109');
       });
 
       it('should subtract two digit numbers with overflow in every digit', () => {
         expect(subtract('100', '99')).to.equal('1');
+      });
+
+      it('should subtract three digit numbers', () => {
+        expect(subtract('222', '111')).to.equal('111');
+      });
+
+      it('should subtract three digit numbers with overflow in the first digit', () => {
+        expect(subtract('212', '103')).to.equal('109');
+      });
+
+      it('should subtract three digit numbers with overflow in the second digit', () => {
+        expect(subtract('501', '111')).to.equal('390');
+      });
+
+      it('should subtract three digit numbers with overflow in the first two second digits', () => {
+        expect(subtract('500', '111')).to.equal('389');
+      });
+
+      it('should subtract three digit numbers with overflow in every digit', () => {
+        expect(subtract('111', '999')).to.equal('-888');
+      });
+    });
+
+    // describe('it should return null if the overflow is bigger than the max number size', () => {
+    //   it('should return null when exceeding the maximum allowable length', () => {
+    //     expect(add('20', '20', { maxLength: 2 })).to.equal('40');
+    //     expect(add('50', '51', { maxLength: 2 })).to.equal(null);
+    //   });
+    // });
+
+    describe('breaking through Number.MIN_SAFE_INTEGER', () => {
+      it('should be able to deal with numbers smaller than Number.MIN_SAFE_INTEGER', () => {
+        // regular numbers fail
+        expect(`${-9007199254740991 - 2}`).to.not.equal('-9007199254740993');
+
+        // this method succeeds
+        expect(subtract('0', '9007199254740993')).to.equal('-9007199254740993');
       });
     });
   });
