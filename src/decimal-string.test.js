@@ -5,6 +5,29 @@ import { add, subtract } from './decimal-string';
 
 describe('decimal string', () => {
   describe('addition', () => {
+    describe('term validation', () => {
+      const invalidTerms = ['abc', '10a', 'a10', '10.', '10.a', '10.0a', 'a10.4'];
+      const validTerms = ['1', '10', '1.0', '1.1', '0.1', '10.001', '10.00'];
+
+      // const invalid = invalidTerms.concat(invalidTerms.map())
+
+      it('should throw if the first term is invalid', () => {
+        invalidTerms.forEach(arg => {
+          expect(() => add(arg, '10')).to.throw();
+        });
+      });
+
+      it('should throw if the second term is invalid', () => {
+        invalidTerms.forEach(arg => {
+          expect(() => add('10', arg)).to.throw();
+        });
+      });
+
+      it('should not throw if the first term is valid', () => {
+
+      });
+    });
+
     describe('single digits', () => {
       it('should add with no overflow', () => {
         expect(add('1', '2')).to.equal('3');
@@ -14,8 +37,6 @@ describe('decimal string', () => {
         expect(add('6', '8')).to.equal('14');
       });
     });
-
-    // TODO: adding positive and negative numbers
 
     describe('two digitis', () => {
       it('should add with one digit numbers', () => {
@@ -65,7 +86,42 @@ describe('decimal string', () => {
       });
     });
 
-    describe.skip('decimals', () => {
+    describe('decimals', () => {
+      it('should add decimals', () => {
+        expect(add('0.2', '0.1')).to.equal('0.3');
+      });
+
+      it('should add decimals with overflow', () => {
+        expect(add('0.01', '0.02')).to.equal('0.03');
+      });
+
+      it('should add decimals with integer overflow', () => {
+        expect(add('1.6', '1.6')).to.equal('3.2');
+      });
+
+      it('should add decimals with integer overflow and no remainder', () => {
+        expect(add('0.5', '0.5')).to.equal('1');
+      });
+
+      it('should add a one digit decimal with a two digit decimal', () => {
+        expect(add('0.2', '0.02')).to.equal('0.22');
+      });
+
+      it('should add two digit decimals with overflow', () => {
+        expect(add('0.15', '0.16')).to.equal('0.31');
+      });
+
+      it('should add two digit decimals with overflow and no remainder in the second digit', () => {
+        expect(add('0.15', '0.15')).to.equal('0.3');
+      });
+
+      it('should add two digit decimals with overflow and no decimal remainder', () => {
+        expect(add('0.45', '0.55')).to.equal('1');
+      });
+
+      it('should add numbers with and without decimals', () => {
+        expect(add('101', '1.2')).to.equal('102.2');
+      });
 
     });
 

@@ -11,7 +11,9 @@
     "lint": "eslint src",
     "typecheck": "flow check"
   },
-  "dependencies": {},
+  "dependencies": {
+    "invariant": "2.2.2"
+  },
   "devDependencies": {
     "babel-core": "6.24.0",
     "babel-eslint": "7.1.1",

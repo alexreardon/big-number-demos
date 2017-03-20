@@ -1,8 +1,18 @@
 // @flow
+import invariant from 'invariant';
 
 type Options = {|
   maxLength: number
-    |}
+|}
+
+// https://regex101.com/r/DT8BYP/1
+// group 1 = sign
+// group 2 = integer
+// gropu 3 = decimal
+const supportedNumberFormat = /^(-?)(\d+)(?:\.(\d+))?$/;
+
+const isNumber = (value: string): boolean =>
+  supportedNumberFormat.test(value);
 
 // Max string sizes
 // ## IE9
@@ -19,11 +29,14 @@ const maxStringLength = Math.pow(2, 30);
 const defaultOptions: Options = { maxLength: maxStringLength };
 
 export const add = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
-  const maxValueLength = Math.max(term1.length, term2.length);
+  invariant(isNumber(term1) && isNumber(term2), 'terms must be formatted correctly');
+
+  const maxDigitLength = Math.max(term1.length, term2.length);
+
   let digitToCarry = 0;
   let result = '';
 
-  for (let i = 0; i < maxValueLength || digitToCarry != 0; i++) {
+  for (let i = 0; i < maxDigitLength || digitToCarry != 0; i++) {
     if (result.length + 1 > options.maxLength) {
       return null;
     }
@@ -90,9 +103,6 @@ const getSubtraction = (bigger: string, smaller: string): ?string => {
     if (digit2Position < 0) {
       //TODO: could optimise and just return the remaning digits of bigger
       result = `${digit1}${result}`;
-      // if (isNoMoreWorkRequired(digit1Position)) {
-      //   break;
-      // }
       continue;
     }
 
