@@ -6,10 +6,11 @@ import { add, subtract } from './decimal-string';
 describe('decimal string', () => {
   describe('addition', () => {
     describe('term validation', () => {
-      const invalidTerms = ['abc', '10a', 'a10', '10.', '10.a', '10.0a', 'a10.4'];
-      const validTerms = ['1', '10', '1.0', '1.1', '0.1', '10.001', '10.00'];
+      // for every item in an array, add a value that has a '-' prefix
+      const withNegative = (array: string[]): string[] => array.concat(array.map(item => `-${item}`));
 
-      // const invalid = invalidTerms.concat(invalidTerms.map())
+      const invalidTerms: string[] = withNegative(['abc', '10a', 'a10', '10.', '10.a', '10.0a', 'a10.4']);
+      const validTerms: string[] = withNegative(['1', '10', '1.0', '1.1', '0.1', '10.001', '10.00']);
 
       it('should throw if the first term is invalid', () => {
         invalidTerms.forEach(arg => {
@@ -24,7 +25,15 @@ describe('decimal string', () => {
       });
 
       it('should not throw if the first term is valid', () => {
+        validTerms.forEach(arg => {
+          expect(() => add(arg, '10')).to.not.throw();
+        });
+      });
 
+      it('should not throw if the second term is valid', () => {
+        validTerms.forEach(arg => {
+          expect(() => add('10', arg)).to.not.throw();
+        });
       });
     });
 

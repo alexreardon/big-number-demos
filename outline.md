@@ -74,7 +74,7 @@ ideas:
 ### 1.3 hex strings (base 16 digits)
 rather than just `0` or `1` you can store `/[0-9a-f]/` == `0-15` in one digit (base 16)
 
-### 1.4 utf16 digit strings
+### 1.4 utf16 digit strings (or is it utf8?)
 lol: (cannot use double byte character - only 1 byte charaters)
 
 
