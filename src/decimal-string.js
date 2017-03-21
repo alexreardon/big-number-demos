@@ -11,26 +11,8 @@ type Options = {|
 // group 3 = decimal
 const supportedNumberFormat = /^(-?)(\d+)(?:\.(\d+))?$/;
 
-const isNumber = (value: string): boolean =>
+const isFormatSupported = (value: string): boolean =>
   supportedNumberFormat.test(value);
-
-type Parts = {
-  isPositive: boolean,
-  integer: string,
-  decimal: ?string,
-}
-
-const getParts = (term: string): Parts => {
-  const result: ?string[] = supportedNumberFormat.exec(term);
-
-  invariant(result != null, 'term must be formatted correctly');
-
-  return {
-    isPositive: result[1] !== '-',
-    integer: result[2],
-    decimal: result[3],
-  };
-};
 
 // Max string sizes
 // ## IE9
@@ -77,17 +59,36 @@ const addZeros = (value: string, count: number): string => {
   return `${value}${zeros}`;
 };
 
-// using recursion - but should be okay with ES6 tail call optimization
-// removes unneeded digits and decimal point
-const cleanDecimalOutput = (value: string): string => {
-  if (value.charAt(value.length - 1) === '0') {
-    return cleanDecimalOutput(value.slice(0, value.length - 1));
+const removeLeadingZeros = (value: string): string => {
+  if (value.charAt(0) === '0') {
+    invariant(value.length, 'cannot remove leading zeros from invalid number');
+    // drop the first character
+    return removeLeadingZeros(value.slice(1, value.length));
   }
 
+  // add a zero in
+  if (value.charAt(0) === '.') {
+    return `0${value}`;
+  }
+
+  return value;
+};
+
+// using recursion - but should be okay with ES6 tail call optimization
+// removes unneeded digits and decimal point
+const removeTrailingZeros = (value: string): string => {
+  if (value.charAt(value.length - 1) === '0') {
+    // remove trailing zero and move on
+    return removeTrailingZeros(value.slice(0, value.length - 1));
+  }
+
+  // Reached a '.' without any decimals.
+  // Remove the decimal point an return the value.
   if (value.charAt(value.length - 1) === '.') {
     return value.slice(0, value.length - 1);
   }
 
+  // a value found that is not '0' or '.'
   return value;
 };
 
@@ -96,7 +97,6 @@ const removeDecimalPoint = (value: string): string => value.replace('.', '');
 const getTermsWithEqualDecimalComponents = (term1: string, term2: string) => {
   const term1HasADecimal = term1.includes('.');
   const term2HasADecimal = term2.includes('.');
-  debugger;
 
   if (!term1HasADecimal && !term2HasADecimal) {
     return {
@@ -136,7 +136,7 @@ const getTermsWithEqualDecimalComponents = (term1: string, term2: string) => {
 };
 
 export const add = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
-  invariant(isNumber(term1) && isNumber(term2), 'terms must be formatted correctly');
+  invariant(isFormatSupported(term1) && isFormatSupported(term2), 'terms must be formatted correctly');
 
   const sanitised = getTermsWithEqualDecimalComponents(term1, term2);
   if (sanitised === null) {
@@ -150,11 +150,11 @@ export const add = (term1: string, term2: string, options?: Options = defaultOpt
 
   // no decimal manipulation required
   if (sanitised.decimalOffset === 0) {
-    return result;
+    return formatOutput(result);
   }
 
   const decimalIndex = result.length - sanitised.decimalOffset;
-  return cleanDecimalOutput(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
+  return formatOutput(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
 };
 
 const isBigger = (original: string, target: string): boolean => {
@@ -177,20 +177,13 @@ const isBigger = (original: string, target: string): boolean => {
 const replaceAt = (original: string, index: number, insert: string) =>
   `${original.substr(0, index)}${insert}${original.substr(insert.length + index)}`;
 
-const removeLeadingZeros = (value: string): string => {
-  let isFirstValueFound = false;
-  return value.split('')
-    .filter((val: string) => {
-      if (isFirstValueFound) {
-        return true;
-      }
-      if (val !== '0') {
-        isFirstValueFound = true;
-        return true;
-      }
-      return false;
-    })
-    .join('');
+const formatOutput = (value: string): string => {
+  const hasDecimal = value.includes('.');
+  if (!hasDecimal) {
+    return removeLeadingZeros(value);
+  }
+
+  return removeLeadingZeros(removeTrailingZeros(value));
 };
 
 const getSubtraction = (bigger: string, smaller: string): ?string => {
@@ -232,21 +225,38 @@ const getSubtraction = (bigger: string, smaller: string): ?string => {
     result = `${(digit1 + 10) - digit2}${result}`;
   }
 
-  return removeLeadingZeros(result);
+  return result;
 };
 
-export const subtract = (original: string, target: string): ?string => {
-  if (original === target) {
+export const subtract = (term1: string, term2: string): ?string => {
+  if (term1 === term2) {
     return '0';
   }
 
-  const isOriginalBigger = isBigger(original, target);
-  const args = isOriginalBigger ? [original, target] : [target, original];
+  const sanitised = getTermsWithEqualDecimalComponents(term1, term2);
+  if (sanitised == null) {
+    return null;
+  }
+
+  const isTerm1Bigger = isBigger(sanitised.term1, sanitised.term2);
+  const args = isTerm1Bigger ? [sanitised.term1, sanitised.term2] : [sanitised.term2, sanitised.term1];
   const result = getSubtraction(...args);
 
   if (result == null) {
     return null;
   }
 
-  return `${isOriginalBigger ? '' : '-'}${result}`;
+  const sign = `${isTerm1Bigger ? '' : '-'}`;
+
+  if (sanitised.decimalOffset === 0) {
+    return `${sign}${formatOutput(result)}`;
+  }
+
+  const decimalIndex = result.length - sanitised.decimalOffset;
+  const unformattedResult = `${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`;
+  return `${sign}${formatOutput(unformattedResult)}`;
+
+  // const resultWithDecimal = removeTrailingZerosFromDecimal(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
+  // const integerPrefix = resultWithDecimal.charAt(0) === '.' ? '0' : '';
+  // return `${sign}${integerPrefix}${resultWithDecimal}`;
 };

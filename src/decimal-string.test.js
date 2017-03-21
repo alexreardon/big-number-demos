@@ -131,7 +131,6 @@ describe('decimal string', () => {
       it('should add numbers with and without decimals', () => {
         expect(add('101', '1.2')).to.equal('102.2');
       });
-
     });
 
     describe('it should return null if the overflow is bigger than the max number size', () => {
@@ -195,7 +194,7 @@ describe('decimal string', () => {
       });
     });
 
-    describe('trippled digits', () => {
+    describe('tripple digits', () => {
       it('should subtract one digit numbers', () => {
         expect(subtract('101', '1')).to.equal('100');
       });
@@ -234,6 +233,40 @@ describe('decimal string', () => {
 
       it('should subtract three digit numbers with overflow in every digit', () => {
         expect(subtract('111', '999')).to.equal('-888');
+      });
+    });
+
+    describe('decimals', () => {
+      it('should subtract decimals', () => {
+        expect(subtract('0.2', '0.1')).to.equal('0.1');
+      });
+
+      it('should subtract decimals with overflow', () => {
+        expect(subtract('0.01', '0.02')).to.equal('-0.01');
+      });
+
+      it('should subtract decimals with integer overflow', () => {
+        expect(subtract('10.6', '5.7')).to.equal('4.9');
+      });
+
+      it('should subtract decimals with integer overflow and no remainder', () => {
+        expect(subtract('0.5', '0.5')).to.equal('0');
+      });
+
+      it('should subtract a one digit decimal with a two digit decimal', () => {
+        expect(subtract('0.2', '0.02')).to.equal('0.18');
+      });
+
+      it('should subtract two digit decimals with overflow', () => {
+        expect(subtract('0.16', '0.15')).to.equal('0.01');
+      });
+
+      it('should subtract two digit decimals with overflow and no remainder in the first digit', () => {
+        expect(subtract('0.15', '0.05')).to.equal('0.1');
+      });
+
+      it('should subtract numbers with and without decimals', () => {
+        expect(subtract('101', '1.2')).to.equal('99.8');
       });
     });
 
