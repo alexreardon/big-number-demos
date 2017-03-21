@@ -3,16 +3,34 @@ import invariant from 'invariant';
 
 type Options = {|
   maxLength: number
-|}
+    |}
 
 // https://regex101.com/r/DT8BYP/1
-// group 1 = sign
-// group 2 = integer
-// gropu 3 = decimal
+// group 1 = sign (optional '-')
+// group 2 = integer component
+// group 3 = decimal
 const supportedNumberFormat = /^(-?)(\d+)(?:\.(\d+))?$/;
 
 const isNumber = (value: string): boolean =>
   supportedNumberFormat.test(value);
+
+type Parts = {
+  isPositive: boolean,
+  integer: string,
+  decimal: ?string,
+}
+
+const getParts = (term: string): Parts => {
+  const result: ?string[] = supportedNumberFormat.exec(term);
+
+  invariant(result != null, 'term must be formatted correctly');
+
+  return {
+    isPositive: result[1] !== '-',
+    integer: result[2],
+    decimal: result[3],
+  };
+};
 
 // Max string sizes
 // ## IE9
@@ -28,9 +46,7 @@ const maxStringLength = Math.pow(2, 30);
 
 const defaultOptions: Options = { maxLength: maxStringLength };
 
-export const add = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
-  invariant(isNumber(term1) && isNumber(term2), 'terms must be formatted correctly');
-
+const getAddition = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
   const maxDigitLength = Math.max(term1.length, term2.length);
 
   let digitToCarry = 0;
@@ -54,6 +70,91 @@ export const add = (term1: string, term2: string, options?: Options = defaultOpt
   }
 
   return result;
+};
+
+const addZeros = (value: string, count: number): string => {
+  const zeros = Array.from({ length: count }).map(() => '0').join('');
+  return `${value}${zeros}`;
+};
+
+// using recursion - but should be okay with ES6 tail call optimization
+// removes unneeded digits and decimal point
+const cleanDecimalOutput = (value: string): string => {
+  if (value.charAt(value.length - 1) === '0') {
+    return cleanDecimalOutput(value.slice(0, value.length - 1));
+  }
+
+  if (value.charAt(value.length - 1) === '.') {
+    return value.slice(0, value.length - 1);
+  }
+
+  return value;
+};
+
+const removeDecimalPoint = (value: string): string => value.replace('.', '');
+
+const getTermsWithEqualDecimalComponents = (term1: string, term2: string) => {
+  const term1HasADecimal = term1.includes('.');
+  const term2HasADecimal = term2.includes('.');
+  debugger;
+
+  if (!term1HasADecimal && !term2HasADecimal) {
+    return {
+      term1,
+      term2,
+      decimalOffset: 0,
+    };
+  }
+
+  const term1DecimalOffset = term1HasADecimal ? (term1.length - 1) - term1.indexOf('.') : 0;
+  const term2DecimalOffset = term2HasADecimal ? (term2.length - 1) - term2.indexOf('.') : 0;
+
+  if (term1DecimalOffset === term2DecimalOffset) {
+    return {
+      term1: removeDecimalPoint(term1),
+      term2: removeDecimalPoint(term2),
+      decimalOffset: term1DecimalOffset,
+    };
+  }
+
+  // term2 is bigger
+  if (term1DecimalOffset > term2DecimalOffset) {
+    return {
+      term1: removeDecimalPoint(term1),
+      term2: removeDecimalPoint(addZeros(term2, term1DecimalOffset - term2DecimalOffset)),
+      decimalOffset: term1DecimalOffset,
+    };
+  }
+
+  // term2 is bigger
+  return {
+    term1: removeDecimalPoint(addZeros(term1, term2DecimalOffset - term1DecimalOffset)),
+    term2: removeDecimalPoint(term2),
+    decimalOffset: term2DecimalOffset,
+  };
+
+};
+
+export const add = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
+  invariant(isNumber(term1) && isNumber(term2), 'terms must be formatted correctly');
+
+  const sanitised = getTermsWithEqualDecimalComponents(term1, term2);
+  if (sanitised === null) {
+    return null;
+  }
+
+  const result = getAddition(sanitised.term1, sanitised.term2, options);
+  if (result == null) {
+    return null;
+  }
+
+  // no decimal manipulation required
+  if (sanitised.decimalOffset === 0) {
+    return result;
+  }
+
+  const decimalIndex = result.length - sanitised.decimalOffset;
+  return cleanDecimalOutput(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
 };
 
 const isBigger = (original: string, target: string): boolean => {

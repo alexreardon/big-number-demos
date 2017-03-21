@@ -9,7 +9,7 @@ describe('decimal string', () => {
       // for every item in an array, add a value that has a '-' prefix
       const withNegative = (array: string[]): string[] => array.concat(array.map(item => `-${item}`));
 
-      const invalidTerms: string[] = withNegative(['abc', '10a', 'a10', '10.', '10.a', '10.0a', 'a10.4']);
+      const invalidTerms: string[] = withNegative(['abc', '10a', 'a10', '10.', '10.a', '10.0a', 'a10.4', '.1']);
       const validTerms: string[] = withNegative(['1', '10', '1.0', '1.1', '0.1', '10.001', '10.00']);
 
       it('should throw if the first term is invalid', () => {
