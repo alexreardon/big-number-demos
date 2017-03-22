@@ -94,7 +94,13 @@ const removeTrailingZeros = (value: string): string => {
 
 const removeDecimalPoint = (value: string): string => value.replace('.', '');
 
-const getTermsWithEqualDecimalComponents = (term1: string, term2: string) => {
+type Components = {
+  term1: string,
+  term2: string,
+  decimalOffset: number
+}
+
+const getTermsWithEqualDecimalComponents = (term1: string, term2: string): Components => {
   const term1HasADecimal = term1.includes('.');
   const term2HasADecimal = term2.includes('.');
 
@@ -116,6 +122,8 @@ const getTermsWithEqualDecimalComponents = (term1: string, term2: string) => {
       decimalOffset: term1DecimalOffset,
     };
   }
+
+  // TODO: this may exceed the max size of a string
 
   // term2 is bigger
   if (term1DecimalOffset > term2DecimalOffset) {
@@ -233,7 +241,7 @@ export const subtract = (term1: string, term2: string): ?string => {
     return '0';
   }
 
-  const sanitised = getTermsWithEqualDecimalComponents(term1, term2);
+  const sanitised: Components = getTermsWithEqualDecimalComponents(term1, term2);
   if (sanitised == null) {
     return null;
   }
