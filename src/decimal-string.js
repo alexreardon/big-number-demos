@@ -268,3 +268,31 @@ export const subtract = (term1: string, term2: string): ?string => {
   // const integerPrefix = resultWithDecimal.charAt(0) === '.' ? '0' : '';
   // return `${sign}${integerPrefix}${resultWithDecimal}`;
 };
+
+export const multiply = (value: string, multiplyBy: string) => {
+  if (multiplyBy === '0') {
+    return '0';
+  }
+
+  if (multiplyBy === '1') {
+    return value;
+  }
+
+  if (value === '1') {
+    return multiplyBy;
+  }
+
+  let count = '0';
+  let result = '0';
+  while (count !== multiplyBy) {
+    const newCount = add(count, '1');
+    const newResult = add(result, value);
+    if (newCount == null || newResult == null) {
+      return null;
+    }
+    count = newCount;
+    result = newResult;
+  }
+
+  return result;
+};

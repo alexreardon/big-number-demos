@@ -1,7 +1,7 @@
 // @flow
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { add, subtract } from './decimal-string';
+import { add, subtract, multiply } from './decimal-string';
 
 describe('decimal string', () => {
   describe('addition', () => {
@@ -178,19 +178,19 @@ describe('decimal string', () => {
       });
 
       it('should subtract two digit numbers', () => {
-         expect(subtract('22', '11')).to.equal('11');
+        expect(subtract('22', '11')).to.equal('11');
       });
 
       it('should subtract two digit numbers with overflow in the first digit', () => {
-         expect(subtract('22', '13')).to.equal('9');
+        expect(subtract('22', '13')).to.equal('9');
       });
 
       it('should subtract two digit numbers with overflow in the second digit', () => {
-         expect(subtract('22', '30')).to.equal('-8');
+        expect(subtract('22', '30')).to.equal('-8');
       });
 
       it('should subtract two digit numbers with overflow in every digit', () => {
-         expect(subtract('11', '22')).to.equal('-11');
+        expect(subtract('11', '22')).to.equal('-11');
       });
     });
 
@@ -288,8 +288,68 @@ describe('decimal string', () => {
     });
   });
 
-  describe('multiplication', () => {
+  describe.only('multiplication', () => {
+    it('should return 0 when anything mulitiplied by 0 is 0', () => {
+      ['1', '12', '102', '101011'].forEach(value => {
+        expect(multiply(value, '0')).to.equal('0');
+      });
+    });
 
+    it('should return the original value when mutliplied by 1', () => {
+      ['1', '12', '102', '101011'].forEach(value => {
+        expect(multiply(value, '1')).to.equal(value);
+      });
+    });
+
+    describe('single digits', () => {
+      it('should multiply with no overflow', () => {
+        expect(multiply('2', '4')).to.equal('8');
+      });
+
+      it('should multiply with overflow', () => {
+        expect(multiply('4', '4')).to.equal('16');
+      });
+    });
+
+    describe('double digits', () => {
+      it('should multiply with a single digit', () => {
+        expect(multiply('10', '5')).to.equal('50');
+      });
+
+      it('should multiply with one overflow', () => {
+        expect(multiply('10', '10')).to.equal('100');
+      });
+
+      it('should multiply with lots of overflow', () => {
+        expect(multiply('99', '99')).to.equal('9801');
+      });
+    });
+
+    describe('tripple digits', () => {
+      it('should multiply with single digits', () => {
+        expect(multiply('100', '5')).to.equal('500');
+      });
+
+      it('should multiply with double digits and one overflow', () => {
+        expect(multiply('100', '10')).to.equal('1000');
+      });
+
+      it('should multiply with double digits and two overflow digits', () => {
+        expect(multiply('500', '20')).to.equal('10000');
+      });
+
+      it('should multiply with double digits with maximum overflow', () => {
+        expect(multiply('999', '99')).to.equal('98901');
+      });
+
+      it('should mulitply with tripple digits', () => {
+        expect(multiply('100', '100')).to.equal('10000');
+      });
+
+      it('sould multiple with maxium overflow', () => {
+        expect(multiply('999', '999')).to.equal('998001');
+      });
+    });
   });
 
   describe('division', () => {
