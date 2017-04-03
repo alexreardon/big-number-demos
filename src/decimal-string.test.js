@@ -1,9 +1,52 @@
 // @flow
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { add, subtract, multiply } from './decimal-string';
+import { add, subtract, multiply, divide, isGreaterThan } from './decimal-string';
 
 describe('decimal string', () => {
+  describe('is greater than', () => {
+    describe('single digits', () => {
+      it('should return false when the values are equal', () => {
+        expect(isGreaterThan('3', '3')).to.equal(false);
+      });
+
+      it('should return true when the first value is bigger than the second', () => {
+        expect(isGreaterThan('5', '3')).to.equal(true);
+      });
+
+      it('should return false when the value is smaller than the second', () => {
+        expect(isGreaterThan('2', '4')).to.equal(false);
+      });
+    });
+
+    describe('double digitis against single digits', () => {
+      it('should return true when the first value is bigger than the second', () => {
+        expect(isGreaterThan('15', '3')).to.equal(true);
+      });
+
+      it('should return false when the value is smaller than the second', () => {
+        expect(isGreaterThan('2', '14')).to.equal(false);
+      });
+    });
+
+    describe('double digitis against double digits', () => {
+      it('should return false when the values are equal', () => {
+        expect(isGreaterThan('42', '42')).to.equal(false);
+      });
+
+      it('should return true when the first value is bigger than the second', () => {
+        expect(isGreaterThan('87', '32')).to.equal(true);
+      });
+
+      it('should return false when the value is smaller than the second', () => {
+        expect(isGreaterThan('29', '50')).to.equal(false);
+      });
+    });
+  });
+
+  describe('is greater than or equal to', () => {
+
+  });
   describe('addition', () => {
     describe('term validation', () => {
       // for every item in an array, add a value that has a '-' prefix
@@ -288,7 +331,7 @@ describe('decimal string', () => {
     });
   });
 
-  describe.only('multiplication', () => {
+  describe('multiplication', () => {
     it('should return 0 when anything mulitiplied by 0 is 0', () => {
       ['1', '12', '102', '101011'].forEach(value => {
         expect(multiply(value, '0')).to.equal('0');
@@ -350,9 +393,55 @@ describe('decimal string', () => {
         expect(multiply('999', '999')).to.equal('998001');
       });
     });
+
+    describe('decimals', () => {
+
+    });
   });
 
   describe('division', () => {
+    it('should return null when anything is divided by zero', () => {
+      ['1', '12', '102', '101011'].forEach(value => {
+        expect(divide(value, '0')).to.equal(null);
+      });
+    });
 
+    it('should return the original value when it is divided by one', () => {
+      ['1', '12', '102', '101011'].forEach(value => {
+        expect(divide(value, '1')).to.equal(value);
+      });
+    });
+
+    describe('single digits', () => {
+      it('should divide with factors', () => {
+        expect(divide('6', '2')).to.equal('3');
+      });
+
+      it('should divide with simple remainders', () => {
+        expect(divide('3', '2')).to.equal('1 + 1/2');
+      });
+
+      it('should divide with simple remainders - with decimals being factors', () => {
+        expect(divide('6', '4')).to.equal('1 + 2/4');
+      });
+
+      it('should divide with harder remainders', () => {
+        expect(divide('7', '6')).to.equal('1 + 1/6');
+      });
+    });
+
+    describe('double digits', () => {
+      it('should divide with single digit factors', () => {
+        expect(divide('20', '5')).to.equal('4');
+      });
+
+      it('should divide with single digits and remainders', () => {
+        expect(divide('82', '5')).to.equal('16 + 2/5');
+      });
+
+      it('should divide with double digit factors', () => {
+        expect(divide('20', '10')).to.equal('2');
+      });
+    });
   });
 });

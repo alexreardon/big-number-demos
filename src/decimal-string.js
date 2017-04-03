@@ -28,6 +28,48 @@ const maxStringLength = Math.pow(2, 30);
 
 const defaultOptions: Options = { maxLength: maxStringLength };
 
+const validateArgs = (fn: Function) => {
+  return (...args: string[]) => {
+    args.forEach((arg) => {
+      if (!isFormatSupported(arg)) {
+        throw new Error(`invalid number format: ${arg}`);
+      }
+    });
+
+    return fn(...args);
+  };
+};
+
+const isEqual = (original: string, target: string): boolean =>
+  original === target;
+
+export const isGreaterThan = validateArgs((original: string, target: string): boolean => {
+  const sanitised = getTermsWithEqualDecimalComponents(original, target);
+  if (sanitised === null) {
+    return false;
+  }
+
+  const { term1, term2 } = sanitised;
+
+  if (term1.length !== term2.length) {
+    return term1.length > term2.length;
+  }
+
+  // lengths are the same - now need to figure out which is bigger
+  for (let i = 0; i < term1.length; i++) {
+    const number1 = Number(term1.charAt(i));
+    const number2 = Number(term2.charAt(i));
+    if (number1 !== number2) {
+      return number1 > number2;
+    }
+  }
+
+  return false;
+});
+
+const isLessThan = (original: string, target: string): boolean =>
+  !isEqual(original, target) && !isGreaterThan(original, target);
+
 const getAddition = (term1: string, term2: string, options?: Options = defaultOptions): ?string => {
   const maxDigitLength = Math.max(term1.length, term2.length);
 
@@ -53,6 +95,15 @@ const getAddition = (term1: string, term2: string, options?: Options = defaultOp
 
   return result;
 };
+
+const combine = (...functions: Function[]) => (...args: string[]) =>
+  functions.every((fn: Function) => Boolean(fn(...args)));
+
+const either = (...functions: Function[]) => (...args: string[]) =>
+  functions.some((fn: Function) => Boolean(fn(...args)));
+
+export const isGreaterThanOrEqualTo = either(isEqual, isGreaterThan);
+export const isLessThanOrEqualTo = either(isEqual, isLessThan);
 
 const addZeros = (value: string, count: number): string => {
   const zeros = Array.from({ length: count }).map(() => '0').join('');
@@ -165,23 +216,6 @@ export const add = (term1: string, term2: string, options?: Options = defaultOpt
   return formatOutput(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
 };
 
-const isBigger = (original: string, target: string): boolean => {
-  if (original.length != target.length) {
-    return original.length > target.length;
-  }
-
-  // lengths are the same - now need to figure out which is bigger
-  for (let i = 0; i < original.length; i++) {
-    const number1 = Number(original.charAt(i));
-    const number2 = Number(target.charAt(i));
-    if (number1 !== number2) {
-      return number1 > number2;
-    }
-  }
-
-  return false;
-};
-
 const replaceAt = (original: string, index: number, insert: string) =>
   `${original.substr(0, index)}${insert}${original.substr(insert.length + index)}`;
 
@@ -236,8 +270,8 @@ const getSubtraction = (bigger: string, smaller: string): ?string => {
   return result;
 };
 
-export const subtract = (term1: string, term2: string): ?string => {
-  if (term1 === term2) {
+export const subtract = validateArgs((term1: string, term2: string): ?string => {
+  if (isEqual(term1, term2)) {
     return '0';
   }
 
@@ -246,7 +280,7 @@ export const subtract = (term1: string, term2: string): ?string => {
     return null;
   }
 
-  const isTerm1Bigger = isBigger(sanitised.term1, sanitised.term2);
+  const isTerm1Bigger = isGreaterThan(sanitised.term1, sanitised.term2);
   const args = isTerm1Bigger ? [sanitised.term1, sanitised.term2] : [sanitised.term2, sanitised.term1];
   const result = getSubtraction(...args);
 
@@ -267,9 +301,9 @@ export const subtract = (term1: string, term2: string): ?string => {
   // const resultWithDecimal = removeTrailingZerosFromDecimal(`${result.slice(0, decimalIndex)}.${result.slice(decimalIndex)}`);
   // const integerPrefix = resultWithDecimal.charAt(0) === '.' ? '0' : '';
   // return `${sign}${integerPrefix}${resultWithDecimal}`;
-};
+});
 
-export const multiply = (value: string, multiplyBy: string) => {
+export const multiply = validateArgs((value: string, multiplyBy: string) => {
   if (multiplyBy === '0') {
     return '0';
   }
@@ -295,4 +329,39 @@ export const multiply = (value: string, multiplyBy: string) => {
   }
 
   return result;
-};
+});
+
+export const divide = validateArgs((value: string, divideBy: string) => {
+  if (divideBy === '0') {
+    return null;
+  }
+
+  if (divideBy === '1') {
+    return value;
+  }
+
+  if (value === divideBy) {
+    return '1';
+  }
+
+  let count = '0';
+  let remainder = value;
+  while (isGreaterThanOrEqualTo(remainder, divideBy)) {
+    const newCurrent = subtract(remainder, divideBy);
+    const newCount = add(count, '1');
+
+    if (newCount == null || newCurrent == null) {
+      return null;
+    }
+
+    count = newCount;
+    remainder = newCurrent;
+  }
+
+  // no decimal component
+  if (remainder === '0') {
+    return count;
+  }
+
+  return `${count} + ${remainder}/${divideBy}`;
+});
