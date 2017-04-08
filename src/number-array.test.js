@@ -22,5 +22,13 @@ describe('number array', () => {
     it('should carry single digit additions', () => {
       expect(add([5], [6])).to.deep.equal([1, 1]);
     });
+
+    it('should carry two digit numbers in the first digit', () => {
+      expect(add([15], [16])).to.deep.equal([2, 1]);
+    });
+
+    it('should carry two digit numbers in the second digit', () => {
+      expect(add([51], [52])).to.deep.equal([1, 0, 3]);
+    });
   });
 });
