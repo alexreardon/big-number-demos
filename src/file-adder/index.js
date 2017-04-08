@@ -22,11 +22,12 @@ const write$ = add$.map(value => {
   output$.next(value);
 });
 
-// on finish: if there is still a carry we need to add it
-
 // start the stream
 write$.subscribe({
   complete: () => {
+    if (shouldCarry1) {
+      output$.next(1);
+    }
     output$.complete();
   },
 });

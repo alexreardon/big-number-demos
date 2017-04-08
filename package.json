@@ -6,7 +6,7 @@
   "author": "Alex Reardon <alexreardon@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha ./src/*.test.js --compilers js:babel-register -",
+    "test": "mocha ./src/**/*.test.js --compilers js:babel-register -",
     "test:watch": "yarn run test -- --watch",
     "lint": "eslint src",
     "typecheck": "flow check",
