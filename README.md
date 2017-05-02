@@ -4,6 +4,8 @@ Hi there! This repo contains a few assorted tools and scripts associated with do
 
 The code in this repo is **not intended for production use** and is intended only for illustrative purposes. If you are looking for a production supported big number implementation check out [bignumber.js](https://github.com/MikeMcl/bignumber.js/)
 
+This is by no means an exhaustive list on how you can do big numbers. This is just a collection of approaches and utilities related to the approaches I explored in my talk - and a few others.
+
 ## Decimal string (`/decimal-string`)
 
 This is the most feature rich big number implementation. It contains a mostly working number system written using base 10 decimal strings (eg `'-0.202'`).
@@ -15,6 +17,12 @@ To see the tests for this system run `yarn run test`. It supports a suprising am
 This is very basic implementation of big numbers using typed arrays. It treats the values as if they are formatted in with the smallest values on the left (LTR) rather than how numbers usually work with the smallest values on the right (RTL). This implementation is super limited and only supports a basic `add` function.
 
 There are some basic tests for this system which you can run using `yarn run test`.
+
+## Arrays of number (`/number-array`)
+
+I did not go into this one and I have not explored it greatly. The idea is to store a array of `Number` values and treat each slot in the array as following on from the value before. This should yield a maximum value of:
+
+`(Number.MAX_SAFE_INTEGER)^(max length of array) -1`
 
 ## File adder (`/file-adder`)
 
