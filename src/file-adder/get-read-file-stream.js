@@ -8,7 +8,7 @@ type Options = {
 }
 
 const defaultOptions: Options = {
-  // number of bits to read at a time
+  // number of bytes to read at a time
   highWaterMark: 1,
   encoding: 'utf8',
 };
