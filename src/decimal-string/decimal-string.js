@@ -96,8 +96,10 @@ const getAddition = (term1: string, term2: string, options?: Options = defaultOp
   return result;
 };
 
-const combine = (...functions: Function[]) => (...args: string[]) =>
-  functions.every((fn: Function) => Boolean(fn(...args)));
+// Can combine comparision operators to create new ones
+// Useful but unused at this stage.
+//const combine = (...functions: Function[]) => (...args: string[]) =>
+//  functions.every((fn: Function) => Boolean(fn(...args)));
 
 const either = (...functions: Function[]) => (...args: string[]) =>
   functions.some((fn: Function) => Boolean(fn(...args)));

@@ -6,14 +6,12 @@
   "author": "Alex Reardon <alexreardon@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha ./src/**/*.test.js --compilers js:babel-register -",
+    "test": "mocha ./src/**/*.test.js --compilers js:babel-register",
     "test:watch": "yarn run test -- --watch",
     "lint": "eslint src",
     "typecheck": "flow check",
-    "start:file-adder": "babel-node src/file-adder",
-    "unicode:text-to-code-point": "node src/unicode/text-to-code-point.js hello 😀 👴🏻",
-    "unicode:text-to-code-point-simple": "node src/unicode/text-to-code-point-2.js hello 😀 👴🏻",
-    "unicode:text-to-code-point-and-back": "node src/unicode/text-to-code-point-2.js hello 😀 | node src/unicode/code-point-to-text.js"
+    "file-adder": "babel-node src/file-adder",
+    "print-big-heap": "./src/big-node/start.sh"
   },
   "dependencies": {
     "invariant": "2.2.2",
@@ -22,7 +20,7 @@
   },
   "devDependencies": {
     "babel-cli": "6.24.1",
-    "babel-core": "6.24.0",
+    "babel-core": "6ds.24.0",
     "babel-eslint": "7.1.1",
     "babel-plugin-transform-flow-strip-types": "6.22.0",
     "babel-plugin-transform-object-rest-spread": "6.23.0",

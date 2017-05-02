@@ -1,3 +1,5 @@
+const newLineCodepoint = 10;
+
 const myGetCharCodeAt = (str, index) => {
   const current = str.charCodeAt(index);
   const previous = str.charCodeAt(index - 1);
@@ -27,16 +29,27 @@ const myGetCharCodeAt = (str, index) => {
   return str.codePointAt(index);
 };
 
-const getCodePoints = str => str
-  .split('')
-  .map((char, index) => {
-    // console.log('code point', str.codePointAt(index));
-    // return str.codePointAt(index);
+const getCodePoints = str =>
+  str.split('').map((char, index) => {
     return myGetCharCodeAt(str, index);
   })
-  .filter(value => value !== false)
-  .join(' ');
+    // remove surrogate pairs
+    .filter(value => value !== false)
+    // removing new line feeds
+    .filter(value => value !== newLineCodepoint)
+    .join(' ');
 
 const args = process.argv.slice(2);
 
-console.log(getCodePoints(args.join(' ')));
+// called from command line
+if (args.length) {
+  console.log(getCodePoints(args.join(' ')));
+  return;
+}
+
+// piped to
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('data', (chunk) => {
+  console.log(getCodePoints(chunk));
+});

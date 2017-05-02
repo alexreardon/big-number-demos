@@ -3,8 +3,8 @@ import path from 'path';
 import getReadFileStream from './get-read-file-stream';
 import getWriteFileStream from './get-write-file-stream';
 
-const input1$ = getReadFileStream(path.join(__dirname, 'number1'));
-const input2$ = getReadFileStream(path.join(__dirname, 'number2'));
+const input1$ = getReadFileStream(path.join(__dirname, 'input1'));
+const input2$ = getReadFileStream(path.join(__dirname, 'input2'));
 const output$ = getWriteFileStream(path.join(__dirname, 'output'));
 
 const joinedInput$ = input1$.zip(input2$);

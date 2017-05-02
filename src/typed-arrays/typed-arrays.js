@@ -2,10 +2,6 @@
 // A buffer that contains Number.MAX_SAFE_INTEGER bytes
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_array_length
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-const buffer = new ArrayBuffer(Math.pow(2, 30));
-const view = new Uint8Array(buffer);
-
-// view.forEach(chunk => console.log('chunk: ', chunk));
 
 const overflowSize = 1;
 

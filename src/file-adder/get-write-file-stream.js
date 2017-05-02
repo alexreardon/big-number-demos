@@ -1,6 +1,6 @@
 // @flow
 import fs from 'fs';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 type Options = {
   highWaterMark: number,

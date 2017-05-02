@@ -120,15 +120,7 @@
     // rule for detecting extra spaces
     "no-multi-spaces": "error",
     // http://eslint.org/docs/rules/no-console
-    // disallow console.log but allow .warn and .error
-    "no-console": [
-      "error",
-      {
-        "allow": [
-          "warn",
-          "error"
-        ]
-      }
-    ]
+    // allow console.*
+    "no-console": "off"
   }
 }
